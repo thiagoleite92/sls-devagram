@@ -19,3 +19,54 @@ functions:
           path: register
           method: post
           cors: true
+resources:
+  Resources:
+    CognitoUserPool:
+      Type: AWS::Cognito::UserPool
+      Properties:
+        UserPoolName: ${self:service}-${self:provider.stage}-user-pool
+        AdminCreateUserConfig:
+          AllowAdminCreateUserOnly: false
+        UsernameAttributes:
+          - email
+        AutoVerifiedAttributes:
+          - email
+        EmailVerificationMessage: 'Seu código de verificação para o cadastro Devagram é: {####}'
+        EmailVerificationSubject: 'Código de verificação Devagram'
+        Policies:
+          PasswordPolicy:
+            MinimumLength: 8
+            RequireLowercase: true
+            RequireNumbers: true
+            RequireSymbols: true
+            RequireUppercase: true
+    CognitoUserClient:
+      Type: AWS::Cognito::UserPoolClient
+      Properties:
+        UserPoolId: !Ref CognitoUserPool
+        ClientName: ${self:service}-${self:provider.stage}-user-pool-client
+        AllowedOAuthFlows:
+          - implicit
+        AllowedOAuthFlowsUserPoolClient: true
+        AllowedOAuthScopes:
+          - email
+          - openid
+        CallbackURLs:
+          - https://www.devaria.com.br
+        LogoutURLs:
+          - https://www.devaria.com.br
+        ExplicitAuthFlows:
+          - ALLOW_CUSTOM_AUTH
+          - ALLOW_USER_SRP_AUTH
+          - ALLOW_REFRESH_TOKEN_AUTH
+        SupportedIdentityProviders:
+          - COGNITO
+        ReadAttributes:
+          - email
+        WriteAttributes:
+          - email
+    CognitoUserPoolDomain:
+      Type: AWS::Cognito::UserPoolDomain
+      Properties:
+        UserPoolId: !Ref CognitoUserPool
+        Domain: thiagoleite92
