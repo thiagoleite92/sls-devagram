@@ -9,6 +9,7 @@ import {
 } from '../utils/formatResponseUtil';
 import { emailRegex, passwordRegex } from '../constants/Regexes';
 import { ConfirEmailRequest } from '../types/auth/ConfirmEmailRequest';
+import { parse } from 'aws-multipart-parser';
 
 export const register: Handler = async (
   event: APIGatewayEvent
@@ -34,30 +35,30 @@ export const register: Handler = async (
       return formatDefaultResponse(400, 'Parametros de entrada inválidos.');
     }
 
-    const request = JSON.parse(event.body) as UserRegisterRequest;
+    const formData = parse(event, true);
 
-    const { name, password, email } = request;
+    console.log('formData', formData);
 
-    if (!email || !email.match(emailRegex)) {
-      return formatDefaultResponse(400, 'Email inválido.');
-    }
+    // if (!email || !email.match(emailRegex)) {
+    //   return formatDefaultResponse(400, 'Email inválido.');
+    // }
 
-    if (!password || !password.match(passwordRegex)) {
-      return formatDefaultResponse(400, 'Senha inválido.');
-    }
+    // if (!password || !password.match(passwordRegex)) {
+    //   return formatDefaultResponse(400, 'Senha inválido.');
+    // }
 
-    if (!name || name.trim().length < 2) {
-      return formatDefaultResponse(400, 'Nome inválido.');
-    }
+    // if (!name || name.trim().length < 2) {
+    //   return formatDefaultResponse(400, 'Nome inválido.');
+    // }
 
-    const cognitoUser = await new CognitoServices(
-      USER_POOL_ID,
-      USER_POOL_CLIENT_ID
-    ).signUp(email, password);
+    // const cognitoUser = await new CognitoServices(
+    //   USER_POOL_ID,
+    //   USER_POOL_CLIENT_ID
+    // ).signUp(email, password);
 
-    const user = { name, email, cognitoId: cognitoUser.userSub } as User;
+    // const user = { name, email, cognitoId: cognitoUser.userSub } as User;
 
-    await UserModel.create(user);
+    // await UserModel.create(user);
 
     return formatDefaultResponse(200, 'Usuário cadastrado com sucesso!');
   } catch (error) {

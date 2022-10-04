@@ -6,6 +6,9 @@ custom:
   userPoolId: 'us-east-1_dbOn2p8Mb'
   userPoolClientId: '11jg5oe4vosa6ei4rfkrjodmu9'
   userTableName: 'users-table-${self:provider.stage}'
+  apigwBinary:
+    types:
+      - 'multipart/form-data'
 
 provider:
   name: aws
@@ -27,6 +30,7 @@ provider:
 
 plugins:
   - serverless-plugin-typescript
+  - serverless-apigw-binary
 
 functions:
   register:
