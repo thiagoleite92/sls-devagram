@@ -7,15 +7,22 @@ import {
   DefaultJsonResponse,
   formatDefaultResponse,
 } from '../utils/formatResponseUtil';
-import { emailRegex, passwordRegex } from '../constants/Regexes';
+import {
+  emailRegex,
+  imageAllowedExtensions,
+  passwordRegex,
+} from '../constants/Regexes';
 import { ConfirEmailRequest } from '../types/auth/ConfirmEmailRequest';
 import { parse } from 'aws-multipart-parser';
+import { FileData } from 'aws-multipart-parser/dist/models';
+import { S3Service } from '../services/S3Services';
 
 export const register: Handler = async (
   event: APIGatewayEvent
 ): Promise<DefaultJsonResponse> => {
   try {
-    const { USER_POOL_ID, USER_POOL_CLIENT_ID, USER_TABLE } = process.env;
+    const { USER_POOL_ID, USER_POOL_CLIENT_ID, USER_TABLE, AVATAR_BUCKET } =
+      process.env;
 
     if (!USER_POOL_ID || !USER_POOL_CLIENT_ID) {
       return formatDefaultResponse(
@@ -31,6 +38,13 @@ export const register: Handler = async (
       );
     }
 
+    if (!AVATAR_BUCKET) {
+      return formatDefaultResponse(
+        500,
+        'ENVs do bucket não encontrada! Por favor, avise ao administrador do sistema.'
+      );
+    }
+
     if (!event.body) {
       return formatDefaultResponse(400, 'Parametros de entrada inválidos.');
     }
@@ -39,26 +53,49 @@ export const register: Handler = async (
 
     console.log('formData', formData);
 
-    // if (!email || !email.match(emailRegex)) {
-    //   return formatDefaultResponse(400, 'Email inválido.');
-    // }
+    const file = formData.file as FileData;
+    const name = formData.name as string;
+    const email = formData.email as string;
+    const password = formData.password as string;
 
-    // if (!password || !password.match(passwordRegex)) {
-    //   return formatDefaultResponse(400, 'Senha inválido.');
-    // }
+    if (!email || !email.match(emailRegex)) {
+      return formatDefaultResponse(400, 'Email inválido.');
+    }
 
-    // if (!name || name.trim().length < 2) {
-    //   return formatDefaultResponse(400, 'Nome inválido.');
-    // }
+    if (!password || !password.match(passwordRegex)) {
+      return formatDefaultResponse(400, 'Senha inválido.');
+    }
 
-    // const cognitoUser = await new CognitoServices(
-    //   USER_POOL_ID,
-    //   USER_POOL_CLIENT_ID
-    // ).signUp(email, password);
+    if (!name || name.trim().length < 2) {
+      return formatDefaultResponse(400, 'Nome inválido.');
+    }
 
-    // const user = { name, email, cognitoId: cognitoUser.userSub } as User;
+    if (file && !imageAllowedExtensions.exec(file.filename)) {
+      return formatDefaultResponse(
+        400,
+        'Extensão informada do arquivo não é válida'
+      );
+    }
 
-    // await UserModel.create(user);
+    const cognitoUser = await new CognitoServices(
+      USER_POOL_ID,
+      USER_POOL_CLIENT_ID
+    ).signUp(email, password);
+
+    let key = undefined;
+
+    if (file) {
+      key = await new S3Service().saveImage(AVATAR_BUCKET, 'avatar', file);
+    }
+
+    const user = {
+      name,
+      email,
+      cognitoId: cognitoUser.userSub,
+      avatar: key,
+    } as User;
+
+    await UserModel.create(user);
 
     return formatDefaultResponse(200, 'Usuário cadastrado com sucesso!');
   } catch (error) {
