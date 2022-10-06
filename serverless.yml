@@ -49,6 +49,20 @@ functions:
           path: confirmEmail
           method: post
           cors: true
+  forgotPassword:
+    handler: src/functions/auth.forgotPassword
+    events:
+      - http:
+          path: forgotPassword
+          method: post
+          cors: true
+  changePassword:
+    handler: src/functions/auth.changePassword
+    events:
+      - http:
+          path: changePassword
+          method: post
+          cors: true
 
 resources:
   Resources:
@@ -122,8 +136,6 @@ resources:
               Resource:
                 Fn::Join:
                   - ''
-                  -
-                    - 'arn:aws:s3:::'
-                    -
-                      Ref: 'AvatarsBucket'
+                  - - 'arn:aws:s3:::'
+                    - Ref: 'AvatarsBucket'
                     - '/*'
