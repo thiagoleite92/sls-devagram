@@ -3,8 +3,8 @@ service: sls-devagram-typescript
 frameworkVersion: '3'
 
 custom:
-  userPoolId: 'us-east-1_dbOn2p8Mb'
-  userPoolClientId: '11jg5oe4vosa6ei4rfkrjodmu9'
+  userPoolId: 'us-east-1_Ao1qzexX9'
+  userPoolClientId: '6opkobgllftu00cvr2ka78atjq'
   userTableName: 'users-table-${self:provider.stage}'
   avatarBucket: '${self:service}-${self:provider.stage}-avatars-thiagoleite92'
   apigwBinary:
@@ -92,7 +92,7 @@ resources:
             RequireNumbers: true
             RequireSymbols: true
             RequireUppercase: true
-    CognitoUserClient:
+    CognitoUserPoolClient:
       Type: AWS::Cognito::UserPoolClient
       Properties:
         UserPoolId: !Ref CognitoUserPool
@@ -141,8 +141,10 @@ resources:
                 - s3:GetObject
                 - s3:DeleteObject
               Resource:
-                Fn::Join:
-                  - ''
-                  - - 'arn:aws:s3:::'
-                    - Ref: 'AvatarsBucket'
-                    - '/*'
+                 Fn::Join:
+                  - ""
+                  -
+                    - "arn:aws:s3:::"
+                    -
+                      Ref: "AvatarsBucket"
+                    - "/*"
