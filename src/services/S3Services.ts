@@ -34,25 +34,19 @@ export class S3Service {
     });
   }
 
-  public getImageUrl(bucket: string, key: string): Promise<any> {
-    return new Promise((resolve, reject) => {
-      try {
-        const params = {
-          Bucket: bucket,
-          Key: key
-        }
-
-        S3.getSignedUrl('getObject', params, (err, url) => {
-
-          if (err) {
-            return reject(err);
-          }
-
-          resolve(url)
-        })
-      } catch (error) {
-        reject(error);
-      }
-    })
-  }
+  public getImageUrl = (bucket: string, key: string) => {
+    return new Promise<any>((resolve, reject) => {
+         try {
+              var params = { Bucket: bucket, Key: key };
+              S3.getSignedUrl('getObject', params, function (err, url) {
+                   if(err){
+                        reject(err);
+                   }
+                   resolve(url);
+              });
+         } catch (e) {
+              reject(e);
+         }
+    });
+}
 }

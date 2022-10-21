@@ -21,7 +21,7 @@ export const me: Handler = async (
 
     const userId = getUserIdFromEvent(event)
 
-    if (userId) {
+    if (!userId) {
       return formatDefaultResponse(400, 'Usuário não encontrado.')
     }
 
