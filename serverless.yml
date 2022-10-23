@@ -91,6 +91,13 @@ functions:
           path: /me
           method: get
           authorizer: serviceAuthorizer
+  update:
+    handler: src/functions/user.update
+    events:
+      - httpApi:
+          path: /user
+          method: put
+          authorizer: serviceAuthorizer
 
 resources:
   Resources:
