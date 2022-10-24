@@ -17,33 +17,22 @@ import { parse } from 'aws-multipart-parser';
 import { FileData } from 'aws-multipart-parser/dist/models';
 import { S3Service } from '../services/S3Services';
 import { ChangePasswordRequest } from '../types/auth/ChangePasswordRequest';
+import { validateEnvs } from '../utils/environmentsUtils';
 
 export const register: Handler = async (
   event: APIGatewayEvent
 ): Promise<DefaultJsonResponse> => {
   try {
-    const { USER_POOL_ID, USER_POOL_CLIENT_ID, USER_TABLE, AVATAR_BUCKET } =
-      process.env;
+    const { USER_POOL_ID, USER_POOL_CLIENT_ID, AVATAR_BUCKET, error } =
+      validateEnvs([
+        'USER_POOL_ID',
+        'USER_POOL_CLIENT_ID',
+        'USER_TABLE',
+        'AVATAR_BUCKET',
+      ]);
 
-    if (!USER_POOL_ID || !USER_POOL_CLIENT_ID) {
-      return formatDefaultResponse(
-        500,
-        'ENVs do Cognito não encontradas! Por favor, avise ao administrador do sistema.'
-      );
-    }
-
-    if (!USER_TABLE) {
-      return formatDefaultResponse(
-        500,
-        'ENV da tabela de usuário do dynamo não encontrada! Por favor, avise ao administrador do sistema.'
-      );
-    }
-
-    if (!AVATAR_BUCKET) {
-      return formatDefaultResponse(
-        500,
-        'ENVs do bucket não encontrada! Por favor, avise ao administrador do sistema.'
-      );
+    if (error) {
+      return formatDefaultResponse(500, error);
     }
 
     if (!event.body) {
@@ -51,8 +40,6 @@ export const register: Handler = async (
     }
 
     const formData = parse(event, true);
-
-    console.log('formData', formData);
 
     const file = formData.file as FileData;
     const name = formData.name as string;
@@ -112,13 +99,13 @@ export const confirmEmail: Handler = async (
   event: APIGatewayEvent
 ): Promise<DefaultJsonResponse> => {
   try {
-    const { USER_POOL_ID, USER_POOL_CLIENT_ID } = process.env;
+    const { USER_POOL_ID, USER_POOL_CLIENT_ID, error } = validateEnvs([
+      'USER_POOL_ID',
+      'USER_POOL_CLIENT_ID',
+    ]);
 
-    if (!USER_POOL_ID || !USER_POOL_CLIENT_ID) {
-      return formatDefaultResponse(
-        500,
-        'ENVs do Cognito não encontradas! Por favor, avise ao administrador do sistema.'
-      );
+    if (error) {
+      return formatDefaultResponse(500, error);
     }
 
     if (!event.body) {
@@ -156,13 +143,13 @@ export const forgotPassword: Handler = async (
   event: APIGatewayEvent
 ): Promise<DefaultJsonResponse> => {
   try {
-    const { USER_POOL_ID, USER_POOL_CLIENT_ID } = process.env;
+    const { USER_POOL_ID, USER_POOL_CLIENT_ID, error } = validateEnvs([
+      'USER_POOL_ID',
+      'USER_POOL_CLIENT_ID',
+    ]);
 
-    if (!USER_POOL_ID || !USER_POOL_CLIENT_ID) {
-      return formatDefaultResponse(
-        500,
-        'ENVs do Cognito não encontradas! Por favor, avise ao administrador do sistema.'
-      );
+    if (error) {
+      return formatDefaultResponse(500, error);
     }
 
     if (!event.body) {
@@ -198,13 +185,13 @@ export const changePassword: Handler = async (
   event: APIGatewayEvent
 ): Promise<DefaultJsonResponse> => {
   try {
-    const { USER_POOL_ID, USER_POOL_CLIENT_ID } = process.env;
+    const { USER_POOL_ID, USER_POOL_CLIENT_ID, error } = validateEnvs([
+      'USER_POOL_ID',
+      'USER_POOL_CLIENT_ID',
+    ]);
 
-    if (!USER_POOL_ID || !USER_POOL_CLIENT_ID) {
-      return formatDefaultResponse(
-        500,
-        'ENVs do Cognito não encontradas! Por favor, avise ao administrador do sistema.'
-      );
+    if (error) {
+      return formatDefaultResponse(500, error);
     }
 
     if (!event.body) {

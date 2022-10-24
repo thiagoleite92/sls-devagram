@@ -34,15 +34,14 @@ provider:
       serviceAuthorizer:
         identitySource: $request.header.Authorization
         issuerUrl:
-            Fn::Join:
-            - ""
-            -
-              - 'https://cognito-idp.'
+          Fn::Join:
+            - ''
+            - - 'https://cognito-idp.'
               - '${self:provider.region}'
               - '.amazonaws.com/'
               - Ref: CognitoUserPool
         audience:
-            - Ref: CognitoUserPoolClient
+          - Ref: CognitoUserPoolClient
 
 plugins:
   - serverless-plugin-typescript
@@ -169,10 +168,8 @@ resources:
                 - s3:GetObject
                 - s3:DeleteObject
               Resource:
-                 Fn::Join:
-                  - ""
-                  -
-                    - "arn:aws:s3:::"
-                    -
-                      Ref: "AvatarsBucket"
-                    - "/*"
+                Fn::Join:
+                  - ''
+                  - - 'arn:aws:s3:::'
+                    - Ref: 'AvatarsBucket'
+                    - '/*'
