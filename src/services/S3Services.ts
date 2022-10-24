@@ -36,17 +36,17 @@ export class S3Service {
 
   public getImageUrl = (bucket: string, key: string) => {
     return new Promise<any>((resolve, reject) => {
-         try {
-              var params = { Bucket: bucket, Key: key };
-              S3.getSignedUrl('getObject', params, function (err, url) {
-                   if(err){
-                        reject(err);
-                   }
-                   resolve(url);
-              });
-         } catch (e) {
-              reject(e);
-         }
+      try {
+        var params = { Bucket: bucket, Key: key };
+        S3.getSignedUrl('getObject', params, function (err, url) {
+          if (err) {
+            reject(err);
+          }
+          resolve(url);
+        });
+      } catch (e) {
+        reject(e);
+      }
     });
-}
+  };
 }
