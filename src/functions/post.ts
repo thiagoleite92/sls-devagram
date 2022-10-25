@@ -1,3 +1,4 @@
+import { DefaultResponseMessage } from './../types/DefaultResponseMessage';
 import { FileData } from 'aws-multipart-parser/dist/models';
 import { UserModel } from '../models/UserModel';
 import { APIGatewayEvent, Handler } from 'aws-lambda';
@@ -189,5 +190,51 @@ export const postComment: Handler = async (
   } catch (error) {
     console.log('Error on post comments: ', error);
     return formatDefaultResponse(500, 'Error ao postar um comentário.');
+  }
+};
+
+export const get: Handler = async (
+  event: any
+): Promise<DefaultJsonResponse> => {
+  try {
+    const { error, POST_BUCKET } = validateEnvs(['POST_BUCKET', 'POST_TABLE']);
+
+    if (error) {
+      return formatDefaultResponse(500, error);
+    }
+
+    const userId = getUserIdFromEvent(event);
+
+    if (!userId) {
+      return formatDefaultResponse(400, 'Usuário não encontrado.');
+    }
+
+    const user = await UserModel.get({ cognitoId: userId });
+
+    if (!user) {
+      return formatDefaultResponse(400, 'Usuário não encontrado.');
+    }
+
+    const { postId } = event.pathParameters;
+
+    if (!postId) {
+      return formatDefaultResponse(400, 'Publicação não encontrada.');
+    }
+
+    const post = await PostModel.get({ id: postId });
+
+    if (!post) {
+      return formatDefaultResponse(400, 'Publicação não encontrada.');
+    }
+
+    post.image = await new S3Service().getImageUrl(POST_BUCKET, post.image);
+
+    return formatDefaultResponse(200, undefined, post);
+  } catch (error) {
+    console.log('Error on get post by id: ', error);
+    return formatDefaultResponse(
+      500,
+      'Erro ao buscar comentário por id! Tente novamente ou contacte o administrador do sistema.'
+    );
   }
 };
