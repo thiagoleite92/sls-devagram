@@ -116,6 +116,13 @@ functions:
           path: /like/{postId}
           method: put
           authorizer: serviceAuthorizer
+  postComment:
+    handler: src/functions/post.postComment
+    events:
+      - httpApi:
+          path: /comment/{postId}
+          method: put
+          authorizer: serviceAuthorizer
 
 resources:
   Resources:
