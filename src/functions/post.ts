@@ -83,3 +83,49 @@ export const create: Handler = async (
     );
   }
 };
+
+export const toggleLike: Handler = async (event: any) => {
+  try {
+    const { error } = validateEnvs(['POST_TABLE']);
+
+    const userId = getUserIdFromEvent(event);
+
+    if (!userId) {
+      return formatDefaultResponse(400, 'Usuário não encontrado.');
+    }
+
+    const user = await UserModel.get({ cognitoId: userId });
+
+    if (!user) {
+      return formatDefaultResponse(400, 'Usuário não encontrado.');
+    }
+
+    const { postId } = event.pathParameters;
+
+    const post = await PostModel.get({ id: postId });
+
+    if (!post) {
+      return formatDefaultResponse(400, 'Post não encontrado');
+    }
+
+    const hasLikedIndex = post.likes.findIndex((obj) => {
+      const result = obj.toString() === userId;
+      return result;
+    });
+
+    if (hasLikedIndex != -1) {
+      post.likes.splice(hasLikedIndex, 1);
+      await PostModel.update(post);
+      return formatDefaultResponse(200, 'Descurtiu a publicação com sucesso.');
+    } else {
+      post.likes.push(userId);
+      await PostModel.update(post);
+      return formatDefaultResponse(200, 'Curtiu a publicação com sucesso.');
+    }
+
+    return formatDefaultResponse(200, 'teste');
+  } catch (error) {
+    console.log('Error on toggle like: ', error);
+    return formatDefaultResponse(500, 'Error ao curtir/descurtir publicação.');
+  }
+};
