@@ -112,3 +112,45 @@ export const update: Handler = async (
     );
   }
 };
+
+export const getUserById: Handler = async (
+  event: any
+): Promise<DefaultJsonResponse> => {
+  try {
+    const { error, AVATAR_BUCKET } = validateEnvs([
+      'AVATAR_BUCKET',
+      'USER_TABLE',
+    ]);
+
+    if (error) {
+      return formatDefaultResponse(500, error);
+    }
+
+    const { userId } = event.pathParameters;
+
+    if (!userId) {
+      return formatDefaultResponse(400, 'Usuário não encontrado.');
+    }
+
+    const user = await UserModel.get({ cognitoId: userId });
+
+    if (!user) {
+      return formatDefaultResponse(400, 'Usuário não encontrado.');
+    }
+
+    if (user.avatar) {
+      user.avatar = await new S3Service().getImageUrl(
+        AVATAR_BUCKET,
+        user.avatar
+      );
+    }
+
+    return formatDefaultResponse(200, undefined, user);
+  } catch (error) {
+    console.log('Error on get user by id: ', error);
+    return formatDefaultResponse(
+      500,
+      'Erro ao obter dados do usuário. Tente novamente ou contacte o administrador do sistema.'
+    );
+  }
+};
