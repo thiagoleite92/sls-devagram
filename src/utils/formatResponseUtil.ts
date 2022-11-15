@@ -1,4 +1,4 @@
-import type { DefaultResponseMessage } from '../types/DefaultResponseMessage';
+import { DefaultResponseMessage } from './../types/DefaultResponseMessage';
 
 export type DefaultJsonResponse = {
   statusCode: number;

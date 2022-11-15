@@ -1,8 +1,6 @@
 import { FileData } from 'aws-multipart-parser/dist/models';
 import { UserModel } from './../models/UserModel';
 import { APIGatewayEvent, Handler } from 'aws-lambda';
-import { CognitoServices } from '../services/CognitoServices';
-import { LoginRequest } from '../types/login/LoginRequest';
 import { getUserIdFromEvent } from '../utils/authenticationHandlerUtils';
 import {
   DefaultJsonResponse,
@@ -12,6 +10,7 @@ import { S3Service } from '../services/S3Services';
 import { parse } from 'aws-multipart-parser';
 import { imageAllowedExtensions } from '../constants/Regexes';
 import { validateEnvs } from '../utils/environmentsUtils';
+import { DefaultListPaginatedResponse } from '../types/DefaultListPaginatedResponse';
 
 export const me: Handler = async (
   event: APIGatewayEvent
@@ -151,6 +150,68 @@ export const getUserById: Handler = async (
     return formatDefaultResponse(
       500,
       'Erro ao obter dados do usuário. Tente novamente ou contacte o administrador do sistema.'
+    );
+  }
+};
+
+export const searchUser: Handler = async (
+  event: any
+): Promise<DefaultJsonResponse> => {
+  try {
+    const { error, AVATAR_BUCKET } = validateEnvs([
+      'AVATAR_BUCKET',
+      'USER_TABLE',
+    ]);
+
+    if (error) {
+      return formatDefaultResponse(500, error);
+    }
+
+    const { filter } = event.pathParameters;
+
+    if (!filter || filter.length < 3) {
+      return formatDefaultResponse(400, 'Filtro não informado.');
+    }
+
+    const { lastKey } = event.queryStringParameters || '';
+
+    const query = UserModel.scan()
+      .where('name')
+      .contains(filter)
+      .or()
+      .where('email')
+      .contains(filter);
+
+    if (lastKey) {
+      query.startAt({ cognitoId: lastKey });
+    }
+
+    const result = await query.limit(5).exec();
+
+    const response = {} as DefaultListPaginatedResponse;
+
+    if (result) {
+      response.count = result.count;
+      response.lastKey = response.lastKey;
+
+      for (const document of result) {
+        if (document && document.avatar) {
+          document.avatar = await new S3Service().getImageUrl(
+            AVATAR_BUCKET,
+            document.avatar
+          );
+        }
+      }
+
+      response.data = result;
+    }
+
+    return formatDefaultResponse(200, undefined, response);
+  } catch (error) {
+    console.log('Error on search user by filter', error);
+    return formatDefaultResponse(
+      500,
+      'Erro ao obter dados de usuário por nome ou email. Tente novamente ou contacte o administrador do sistema.'
     );
   }
 };
