@@ -186,7 +186,7 @@ export const searchUser: Handler = async (
       query.startAt({ cognitoId: lastKey });
     }
 
-    const result = await query.limit(5).exec();
+    const result = await query.limit(1).exec();
 
     const response = {} as DefaultListPaginatedResponse;
 
