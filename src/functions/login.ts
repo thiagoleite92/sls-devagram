@@ -6,6 +6,7 @@ import {
   DefaultJsonResponse,
   formatDefaultResponse,
 } from '../utils/formatResponseUtil';
+import { logger } from '../utils/loggerUtils';
 
 export const handler: Handler = async (
   event: APIGatewayEvent
@@ -17,6 +18,7 @@ export const handler: Handler = async (
     ]);
 
     if (error) {
+      logger.error('login.handler - ', error);
       return formatDefaultResponse(500, error);
     }
 
@@ -32,14 +34,19 @@ export const handler: Handler = async (
       return formatDefaultResponse(400, 'Parametros de entrada inválidos.');
     }
 
+    logger.info('login.handler - start', login);
+
     const result = await new CognitoServices(
       USER_POOL_ID,
       USER_POOL_CLIENT_ID
     ).login(login, password);
 
+    logger.debug('login.handler - cognito response', result);
+    logger.info('login.handler - finish', login);
+
     return formatDefaultResponse(200, undefined, result);
   } catch (error) {
-    console.log('Error on request forgot password: ', error);
+    logger.error('login.handler - Error on request forgot password: ', error);
     return formatDefaultResponse(
       500,
       'Erro realizar autenticacão de usuário! Tente novamente ou contacte o administrador do sistema.'
