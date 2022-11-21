@@ -19,8 +19,8 @@ jobs:
         with:
           node-version: ${{matrix.node-version}}
       - run: npm i
-      - name: serveless deploy
-        uses: serveless/github-action@v3.1
+      - name: serverless deploy
+        uses: serverless/github-action@v3.1
         with:
           args: deploy --stage dev --region us-east-1 --param="level=info"
         env:
