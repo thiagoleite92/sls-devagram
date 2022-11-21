@@ -1,4 +1,4 @@
-name: deploy ambiente desenvolvimento
+name: deploy
 
 on:
   push:
